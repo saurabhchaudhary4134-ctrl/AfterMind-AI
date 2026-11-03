@@ -1,0 +1,108 @@
+## AfterMind AI — Render deployment manifest
+##
+## Usage:
+##   1. Push this file to your GitHub repo.
+##   2. In Render Dashboard → New → Blueprint → connect your repo.
+##   3. Render reads this file and creates the service.
+##   4. Fill in the secret environment variables in the Render dashboard
+##      (all entries marked `sync: false` must be set manually).
+##
+## Render free tier limitations:
+##   - Web service spins down after 15 min of inactivity (cold starts ~30s).
+##   - 512 MB RAM — sufficient for the API without Celery workers.
+##   - No persistent disk — use Neon PostgreSQL for the database.
+##   - SIMULATION_SYNC=true is set below so simulations run inline
+##     (no Redis or Celery needed on the free tier).
+##
+## Documentation: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: aftermind-api
+    runtime: python
+    rootDir: services/api
+    region: oregon   # Change to "frankfurt" or "singapore" if preferred
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: >
+      python -m alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    healthCheckPath: /api/v1/health
+
+    envVars:
+      # ── Required — set these in the Render dashboard ───────────────────
+      - key: DATABASE_URL
+        sync: false          # Set to your Neon postgresql+psycopg2:// URL
+
+      - key: SECRET_KEY
+        generateValue: true  # Render auto-generates a secure random value
+
+      # ── CORS — set to your Vercel frontend URL ──────────────────────────
+      - key: CORS_ORIGINS
+        sync: false          # e.g. https://aftermind-ai.vercel.app
+
+      # ── Stable defaults for Render free tier ────────────────────────────
+      - key: ENVIRONMENT
+        value: production
+
+      - key: SIMULATION_SYNC
+        value: "true"        # Run simulations inline; no Redis needed
+
+      - key: LOG_LEVEL
+        value: INFO
+
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "15"
+
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+      - key: ALGORITHM
+        value: HS256
+
+      - key: MAX_ITERATIONS
+        value: "100000"
+
+      - key: MAX_VARIABLES
+        value: "50"
+
+      - key: MAX_FORMULAS
+        value: "50"
+
+      - key: MAX_BODY_SIZE_BYTES
+        value: "1048576"
+
+      # ── Optional — only set if you want LLM features ────────────────────
+      - key: LLM_PROVIDER
+        value: ""            # Set to "openai" and provide LLM_API_KEY to enable
+
+      - key: LLM_API_KEY
+        sync: false          # Leave unset to disable LLM; core sim works without it
+
+      - key: LLM_MODEL
+        value: gpt-4o-mini
+
+      - key: LLM_TIMEOUT_SECONDS
+        value: "30"
+
+      - key: LLM_MAX_RETRIES
+        value: "2"
+
+      - key: LLM_MAX_TOKENS
+        value: "2000"
+
+      # ── Redis / Celery — not needed on free tier (SIMULATION_SYNC=true) ─
+      # Uncomment and configure if you add a paid Render Redis instance:
+      # - key: REDIS_URL
+      #   sync: false
+      # - key: CELERY_BROKER_URL
+      #   sync: false
+      # - key: CELERY_RESULT_BACKEND
+      #   sync: false
+
+      # ── Stripe — only set with explicit authorization ────────────────────
+      # - key: STRIPE_SECRET_KEY
+      #   sync: false
+      # - key: STRIPE_WEBHOOK_SECRET
+      #   sync: false

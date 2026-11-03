@@ -1,0 +1,36 @@
+{
+  "name": "aftermind-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "recharts": "2.15.4",
+    "clsx": "2.1.1",
+    "tailwind-merge": "2.6.1",
+    "lucide-react": "0.427.0",
+    "zod": "3.25.76",
+    "react-hook-form": "7.88.0",
+    "@hookform/resolvers": "3.10.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "class-variance-authority": "0.7.1",
+    "@types/node": "20.19.43",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "tailwindcss": "3.4.19",
+    "postcss": "8.5.28",
+    "autoprefixer": "10.6.1",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.5"
+  }
+}
