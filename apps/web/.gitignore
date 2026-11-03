@@ -1,0 +1,13 @@
+# Dependencies — never commit these
+node_modules/
+
+# Next.js build output — Vercel builds this itself
+.next/
+out/
+
+# Lockfile is committed; tsbuildinfo is not
+*.tsbuildinfo
+
+# Local env overrides
+.env.local
+.env.*.local
